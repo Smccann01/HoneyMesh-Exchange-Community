@@ -13,6 +13,8 @@ This page describes the current product boundary. An Exchange is a service that 
 
 The administrator creates credentials locally, issues a short-lived one-use enrollment token, and enrolls nodes at that Exchange's own HTTPS origin. No hosted billing account, Network Decode license server, or `honeymesh.io` connection is required for this path. Sharing and discovery start off. Receiving nodes keep their own policy and may treat observations as review-only. See [machine API v1](MACHINE_API_V1.md) and the [Exchange setup](../README.md).
 
+Signed HoneyMesh 2.0 alpha.7 or later nodes may also enroll separately with Network Decode's hosted Exchange. The two connections have independent credentials, feed cursors, and choices to send, receive, or use received intelligence locally. The operator must opt in to each path; choosing one does not activate the other. Hosted access requires its own active per-node membership. An expired hosted seat leaves the private Exchange and local protection available.
+
 ## Hosted Exchange
 
 Network Decode controls access to its own hosted intelligence service. Its current commercial enrollment path requires a licensed HoneyMesh 2.0 node identity and an active hosted seat. The $45 package purchase does not buy a hosted seat. Loss of a hosted seat must not disable local detection, local firewall policy, or an independently operated private Exchange. Public web pages explain the service and subscription path; they do not expose subscriber observations or network activity.
