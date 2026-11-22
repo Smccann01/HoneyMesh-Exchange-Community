@@ -42,6 +42,8 @@ For a persistent service, use your supervisor to run the same `next start` comma
 
 The administrator creates a one-use token that expires in ten minutes using `POST /api/admin/enrollment-token` from the signed-in console session. The node submits its `nodeName`, `clusterId`, `enrollToken`, and public key to `POST /api/hm/enroll` at this Exchange's TLS-verified origin. The response returns a node secret once. Store it in the node's protected configuration. The [machine API contract](MACHINE_API_V1.md) defines subsequent signed requests.
 
+On compatible HoneyMesh 2.0 nodes, open the local **Trusted Peers** panel, find **Use a custom HoneyMesh Exchange**, enter your HTTPS origin and the one-use token, then select **Enroll Custom Exchange**. The node clears its previous Exchange feed cursor and sharing selection when it changes Exchanges. Verify the selected origin and explicitly enable sharing only if you intend to publish observations. The node's local detection and enforcement remain under its own configuration.
+
 The community enrollment route does **not** ask for a hosted subscription. The older `/api/hm/bootstrap` route expects a separate signed trial entitlement and is not the community setup route. Configure nodes to point at your own Exchange origin; a private Exchange neither registers with nor shares data to Network Decode by default.
 
 Discovery and publication start off. A receiving node must explicitly trust a source and apply its own policy. Do not enable automatic enforcement based only on an Exchange observation.
