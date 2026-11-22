@@ -28,7 +28,7 @@ The older signed-license `/api/hm/bootstrap` route is retained for compatibility
 | Network Decode hosted Exchange | Separate hosted subscription | Network Decode operates the service and controls admission |
 | HoneyMesh 2.0 node package | Separate node purchase | Local node software; a purchase does not buy a hosted Exchange seat |
 
-The free Core pilot is also available separately. These paths are explained in [Deployment modes](docs/DEPLOYMENT_MODES.md). A private Exchange does not automatically federate with the hosted service; that gateway remains planned.
+The free Core pilot is also available separately. These paths are explained in [Deployment modes](docs/DEPLOYMENT_MODES.md). Signed HoneyMesh 2.0 alpha.7 or later nodes can opt in to both a customer-operated Exchange and Network Decode's hosted Exchange at once, with separate credentials and sharing choices. The hosted path needs its own paid membership. A private Exchange does not automatically federate with the hosted service; that gateway remains planned.
 
 ## Verify and contribute
 
