@@ -1,0 +1,13 @@
+node_modules/
+.next/
+next-env.d.ts
+.env
+.env.*
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*credentials*.txt
+*.log
+coverage/
+dist/
