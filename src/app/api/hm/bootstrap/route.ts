@@ -4,12 +4,16 @@ import { json } from "@/app/api/_lib";
 import { normalizeLicenseTier, validateVerifiedLicenseClaim } from "@/lib/auth";
 import {
   appendAuditLog,
+  consumeRateLimit,
   createMachineTenant,
   findTenantByID,
   registerNode,
   upsertLicense,
 } from "@/lib/portal-store";
 import { machineBootstrapSchema } from "@/lib/exchange-validation";
+import { trustedClientIP } from "@/lib/edge-guard";
+
+const privateHeaders = { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow" };
 
 function tenantIdForCluster(clusterId: string) {
   return `tenant-machine-${clusterId}`;
@@ -20,9 +24,38 @@ function tenantNameForCluster(clusterId: string) {
 }
 
 export async function POST(request: Request) {
-  const parsedPayload = machineBootstrapSchema.safeParse(await request.json().catch(() => null));
+  const url = new URL(request.url);
+  const proto = process.env.EXCHANGE_TRUST_PROXY === "true" ? request.headers.get("x-forwarded-proto") : url.protocol.slice(0, -1);
+  const localDev = (process.env.NODE_ENV !== "production" || process.env.NETTOOLS_TEST_INSECURE_LOOPBACK === "true") &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+  if (proto !== "https" && !localDev) {
+    return json({ error: "insecure_transport" }, { status: 403, headers: privateHeaders });
+  }
+  const ip = trustedClientIP(request);
+  if (!consumeRateLimit(`bootstrap:${ip ?? "unattributed"}`, ip ? 60 : 120, 60).allowed) {
+    return json({ error: "rate_limited" }, { status: 429, headers: privateHeaders });
+  }
+  const reader = request.body?.getReader();
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  if (reader) {
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      bytes += chunk.value.byteLength;
+      if (bytes > 16384) {
+        await reader.cancel();
+        return json({ error: "invalid_payload" }, { status: 413, headers: privateHeaders });
+      }
+      chunks.push(chunk.value);
+    }
+  }
+  let input: unknown;
+  try { input = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
+  catch { return json({ error: "invalid_payload" }, { status: 400, headers: privateHeaders }); }
+  const parsedPayload = machineBootstrapSchema.safeParse(input);
   if (!parsedPayload.success) {
-    return json({ error: "invalid_payload", issues: parsedPayload.error.flatten() }, { status: 400 });
+    return json({ error: "invalid_payload", issues: parsedPayload.error.flatten() }, { status: 400, headers: privateHeaders });
   }
 
   const payload = parsedPayload.data;
@@ -111,6 +144,6 @@ export async function POST(request: Request) {
       secret,
       bootstrap_mode: "created",
     },
-    { status: 201 },
+    { status: 201, headers: privateHeaders },
   );
 }
